@@ -24,6 +24,7 @@ bool Running = true;
 
 while(Running)
 {
+    currentCustomer = null;
     while(!int.TryParse(Console.ReadLine(), out val) || val < 1 || val > 4)
         Console.WriteLine("Välj ett nummer mellan 1 och 4");
     switch(val)
@@ -35,11 +36,13 @@ while(Running)
 
             break;
         case 2:
-        await ChooseCustomer();
+        await ExistingCustomers();
+        await ChangeGuests();
 
             break;
         case 3:
-
+        await ExistingCustomers();
+        await CancelBooking();
             break;
         case 4:
         Running = false;
@@ -76,7 +79,11 @@ async Task ChooseCustomer()
         case "2":
             string search = ReadText("Sök namn/e-post/telefon: ");
             List<Customer> found = await customers.SearchCustomersAsync(search);
-            if (found.Count == 0) { Console.WriteLine("Ingen kund hittades."); break; }
+            if (found.Count == 0) 
+            { 
+                Console.WriteLine("Ingen kund hittades."); 
+                break; 
+            }
 
             for (int i = 0; i < found.Count; i++)
                 Console.WriteLine($"{i + 1}. {found[i].FirstName} {found[i].LastName} – {found[i].Email}, {found[i].Phone}");
@@ -86,6 +93,24 @@ async Task ChooseCustomer()
             Console.WriteLine($"Vald kund: {currentCustomer.FirstName} {currentCustomer.LastName}");
             break;
     }
+}
+
+async Task ExistingCustomers()
+{
+    string search = ReadText("Sök namn/e-post/telefon: ");
+    List<Customer> found = await customers.SearchCustomersAsync(search);
+    if (found.Count == 0) 
+    { 
+        Console.WriteLine("Ingen kund hittades."); 
+        return;
+    }
+
+    for (int i = 0; i < found.Count; i++)
+        Console.WriteLine($"{i + 1}. {found[i].FirstName} {found[i].LastName} – {found[i].Email}, {found[i].Phone}");
+
+    int choice = MinMaxInt("Välj kund (nummer): ", 1, found.Count);
+    currentCustomer = found[choice - 1];
+    Console.WriteLine($"Vald kund: {currentCustomer.FirstName} {currentCustomer.LastName}");
 }
 
 async Task SearchRooms()
@@ -171,8 +196,62 @@ async Task CreateBooking()
     lastResults.Clear();   // the list is out of date now that the room is booked
 }
 
+async Task ChangeGuests()
+{
+    if (currentCustomer is null) 
+    { 
+        Console.WriteLine("Ingen kund vald"); 
+        return; 
+    }
 
+    List<BookingDetails> list = await bookings.GetBookingsForCustomerAsync(currentCustomer.Id);
+    if (list.Count == 0) 
+    { 
+        Console.WriteLine("Kunden har inga bokningar."); 
+        return; 
+    }
 
+    for (int i = 0; i < list.Count; i++)
+    {
+        var b = list[i];
+        Console.WriteLine($"{i + 1,2}. #{b.BookingId,-4} {b.Accommodation,-25} rum {b.RoomNumber,-7} " +
+            $"{b.CheckIn} – {b.CheckOut}  {b.Guests} pers ");
+    }
+
+    int choice = MinMaxInt("Välj bokning: ", 1, list.Count);
+    BookingDetails booking = list[choice - 1];
+
+    int newGuests = MinMaxInt($"Nytt antal personer (nu {booking.Guests}): ", 1, 50);
+
+    int affected = await bookings.UpdateGuestsAsync(booking.BookingId, currentCustomer.Id, newGuests);
+    Console.WriteLine(affected == 1
+        ? "Antal personer ändrat."
+        : "Ryms det inte så många i rummet.");
+}
+async Task ShowBookings()
+{
+    if (currentCustomer is null) { Console.WriteLine("Välj kund först (1)."); return; }
+
+    List<BookingDetails> list = await bookings.GetBookingsForCustomerAsync(currentCustomer.Id);
+    if (list.Count == 0) { Console.WriteLine("Kunden har inga bokningar."); return; }
+
+    foreach (var b in list)
+    {
+        Console.WriteLine($"#{b.BookingId,-4} {b.Accommodation,-25} rum {b.RoomNumber,-7} " +
+                          $"{b.CheckIn} – {b.CheckOut}  {b.Guests} pers  {b.TotalPrice,8:0} kr");
+    }
+}
+
+async Task CancelBooking()
+{
+    if (currentCustomer is null) { Console.WriteLine("Välj kund först (1)."); return; }
+
+    await ShowBookings();
+    int bookingId = MinMaxInt("Bokningsnummer att avboka: ", 1, int.MaxValue);
+
+    int affected = await bookings.DeleteBookingAsync(bookingId, currentCustomer.Id);
+    Console.WriteLine(affected == 1 ? "Bokningen är avbokad." : "Hittade ingen sådan bokning för kunden.");
+}
 
 //=========================================================
 // Helper methods
