@@ -157,3 +157,64 @@ JOIN customers      c  ON c.customer_id      = b.customer_id
 JOIN rooms          r  ON r.room_id          = b.room_id
 JOIN accommodations a  ON a.accommodation_id = r.accommodation_id
 JOIN cities         ci ON ci.city_id         = a.city_id;
+
+-- ---------------------------------------------------------------------
+--  Seed data
+-- ---------------------------------------------------------------------
+INSERT INTO cities (name) VALUES
+    ('Ystad'),       -- 1
+    ('Visby'),       -- 2
+    ('Båstad'),      -- 3
+    ('Varberg'),     -- 4
+    ('Strömstad');   -- 5
+
+INSERT INTO accommodations
+    (city_id, name, has_pool, has_restaurant, distance_to_beach_m, distance_to_center_m, rating)
+VALUES
+    (1, 'Ystad Saltsjöbad',        TRUE,  TRUE,    50,  1200, 5),  -- 1
+    (1, 'Pensionat Sandskogen',    FALSE, FALSE,  300,  2000, 3),  -- 2
+    (2, 'Hotell Ringmuren',        FALSE, TRUE,   900,   150, 4),  -- 3
+    (2, 'Visby Strandhotell',      TRUE,  TRUE,    80,   600, 4),  -- 4
+    (3, 'Hotel Skansen',           TRUE,  TRUE,   200,   100, 5),  -- 5
+    (3, 'Båstad Vandrarhem',       FALSE, FALSE,  700,   400, 2),  -- 6
+    (4, 'Varbergs Kurort',         TRUE,  TRUE,    30,   800, 4),  -- 7
+    (4, 'Pensionat Apelviken',     FALSE, TRUE,   150,  2500, 3),  -- 8
+    (5, 'Strömstad Spa',           TRUE,  TRUE,   400,   300, 4),  -- 9
+    (5, 'Laholmens Pensionat',     FALSE, FALSE, 1200,    50, 3);  -- 10
+
+INSERT INTO rooms (accommodation_id, room_number, max_guests, price_per_night) VALUES
+    -- Ystad Saltsjöbad
+    (1, '101', 2, 1890.00), (1, '102', 2, 1890.00), (1, '201', 4, 2690.00), (1, 'Svit 1', 6, 4500.00),
+    -- Pensionat Sandskogen
+    (2, '1', 1, 650.00), (2, '2', 2, 850.00), (2, '3', 3, 990.00),
+    -- Hotell Ringmuren
+    (3, '11', 2, 1290.00), (3, '12', 2, 1290.00), (3, '21', 4, 1990.00),
+    -- Visby Strandhotell
+    (4, '101', 2, 1590.00), (4, '102', 3, 1790.00), (4, '201', 5, 2490.00),
+    -- Hotel Skansen
+    (5, '1A', 2, 2190.00), (5, '1B', 2, 2190.00), (5, '2A', 4, 3290.00),
+    -- Båstad Vandrarhem
+    (6, 'Rum 1', 4, 590.00), (6, 'Rum 2', 6, 790.00),
+    -- Varbergs Kurort
+    (7, '10', 2, 1690.00), (7, '20', 3, 1990.00), (7, '30', 4, 2390.00),
+    -- Pensionat Apelviken
+    (8, 'A', 2, 990.00), (8, 'B', 4, 1390.00),
+    -- Strömstad Spa
+    (9, '100', 2, 1790.00), (9, '110', 2, 1790.00), (9, '200', 4, 2590.00),
+    -- Laholmens Pensionat
+    (10, '1', 2, 890.00), (10, '2', 3, 1090.00);
+
+INSERT INTO customers (first_name, last_name, email, phone) VALUES
+    ('Anna',   'Svensson',  'anna.svensson@example.com',  '070-123 45 67'),
+    ('Erik',   'Johansson', 'erik.johansson@example.com', '073-234 56 78'),
+    ('Maria',  'Karlsson',  'maria.karlsson@example.com', '076-345 67 89'),
+    ('Johan',  'Nilsson',   'johan.nilsson@example.com',  '072-456 78 90'),
+    ('Sara',   'Eriksson',  'sara.eriksson@example.com',  '070-567 89 01');
+
+INSERT INTO bookings (customer_id, room_id, check_in_date, check_out_date, guests) VALUES
+    (1,  1, '2026-12-05', '2026-12-10', 2),
+    (1, 14, '2026-12-20', '2026-12-23', 2),
+    (2,  3, '2026-12-01', '2026-12-04', 3),
+    (3, 11, '2026-12-10', '2026-12-17', 2),
+    (4, 19, '2026-12-24', '2026-12-27', 1),
+    (5, 26, '2026-12-28', '2026-12-31', 4);

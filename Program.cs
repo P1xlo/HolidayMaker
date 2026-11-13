@@ -13,17 +13,15 @@ Customer? currentCustomer = null;
 RoomSearch? lastSearch = null;
 List<AvailableRoom> lastResults = [];
 
-Console.WriteLine("1. Skapa ny bokning\n"
-    + "2. Ändra antal personer i en bokning\n"
-    + "3. Avboka\n"
-    + "4. Avsluta program");
-
-
 int val;
 bool Running = true;
 
 while(Running)
 {
+    Console.WriteLine("1. Skapa ny bokning\n"
+        + "2. Ändra antal personer i en bokning\n"
+        + "3. Avboka\n"
+        + "4. Avsluta program");
     currentCustomer = null;
     while(!int.TryParse(Console.ReadLine(), out val) || val < 1 || val > 4)
         Console.WriteLine("Välj ett nummer mellan 1 och 4");
@@ -31,17 +29,23 @@ while(Running)
     {
         case 1:
         await ChooseCustomer();
+        if(currentCustomer == null)
+            break;
         await SearchRooms();
         await CreateBooking();
 
             break;
         case 2:
         await ExistingCustomers();
+        if(currentCustomer == null)
+            break;
         await ChangeGuests();
 
             break;
         case 3:
         await ExistingCustomers();
+        if(currentCustomer == null)
+            break;
         await CancelBooking();
             break;
         case 4:
